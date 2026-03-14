@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AutoConnect</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI;
+}
+
+/* Animated Background */
+
+body{
+background:linear-gradient(-45deg,9C2007,#e9ecef,#dfe9f3,#f4f6f9);
+background-size:400% 400%;
+animation:bgMove 12s ease infinite;
+padding:20px;
+}
+
+@keyframes bgMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+/* Header */
+
+.header{
+text-align:center;
+margin-bottom:40px;
+}
+
+.header h1{
+font-size:32px;
+color:#222;
+}
+
+/* Location box */
+
+.location-box{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+max-width:800px;
+margin:auto;
+margin-bottom:40px;
+text-align:center;
+}
+
+select{
+padding:12px;
+margin:10px;
+width:30%;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+/* Drivers grid */
+
+.drivers-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:25px;
+max-width:1100px;
+margin:auto;
+}
+
+/* Driver card */
+
+.driver-card{
+background:white;
+padding:25px;
+border-radius:15px;
+text-align:center;
+box-shadow:0 8px 20px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.driver-card:hover{
+transform:translateY(-5px);
+}
+
+.driver-img{
+width:90px;
+height:90px;
+border-radius:50%;
+margin-bottom:10px;
+}
+
+.connect-btn{
+margin-top:10px;
+display:inline-block;
+background:#f9a825;
+color:white;
+padding:10px 18px;
+border-radius:8px;
+text-decoration:none;
+font-weight:bold;
+}
+
+.connect-btn:hover{
+background:#f57f17;
+}
+
+.whatsapp{
+background:#25D366;
+}
+
+.no-drivers{
+text-align:center;
+font-size:18px;
+padding:40px;
+}
+
+/* Loader */
+
+.loader{
+width:50px;
+height:50px;
+border:6px solid #eee;
+border-top:6px solid #f9a825;
+border-radius:50%;
+animation:spin 1s linear infinite;
+margin:40px auto;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>🚕 AutoConnect</h1>
+<p>Find Nearby Auto Drivers</p>
+</div>
+
+<div class="location-box">
+
+<select id="stateSelect">
+<option value="">Select State</option>
+<option value="tamilnadu">Tamil Nadu</option>
+</select>
+
+<select id="districtSelect" disabled>
+<option value="">Select District</option>
+</select>
+
+<select id="talukSelect" disabled>
+<option value="">Select Taluk</option>
+</select>
+
+</div>
+
+<div id="driversGrid" class="drivers-grid">
+<div class="no-drivers">Select State → District → Taluk</div>
+</div>
+
+<script>
+
+/* Location Data */
+
+const locationData={
+tamilnadu:{
+
+chennai:["Ambattur","Egmore","Velachery"],
+
+coimbatore:["Pollachi","Mettupalayam","Sulur"],
+
+madurai:["Melur","Usilampatti","Vadipatti"],
+
+salem:["Omalur","Attur"],
+
+trichy:["Srirangam","Lalgudi"],
+
+theni:["Periyakulam","Bodinayakanur"],
+
+namakkal:["Valur","Pandamangalam"]
+
+}
+};
+
+/* Example Auto Drivers */
+
+const drivers=[
+
+// Chennai
+{name:"Ravi",phone:"919840000000",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"chennai",taluk:"ambattur",hometown:"Ambattur"},
+{name:"Suresh",phone:"919840111111",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"chennai",taluk:"egmore",hometown:"Egmore"},
+{name:"Arun",phone:"919840222222",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"chennai",taluk:"velachery",hometown:"Velachery"},
+
+// Coimbatore
+{name:"Kumar",phone:"919840333333",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"coimbatore",taluk:"pollachi",hometown:"Pollachi"},
+{name:"Selvam",phone:"919840444444",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"coimbatore",taluk:"mettupalayam",hometown:"Mettupalayam"},
+{name:"Ramesh",phone:"919840555555",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"coimbatore",taluk:"sulur",hometown:"Sulur"},
+{name:"Ramash",phone:"919840550055",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"coimbatore",taluk:"sulur",hometown:"Sulur"},
+
+// Madurai
+{name:"Mani",phone:"919840666666",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"madurai",taluk:"melur",hometown:"Melur"},
+{name:"Karthik",phone:"919840777777",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"madurai",taluk:"usilampatti",hometown:"Usilampatti"},
+{name:"Prabhu",phone:"919840888888",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"madurai",taluk:"vadipatti",hometown:"Vadipatti"},
+
+// Salem
+{name:"Bala",phone:"919841111111",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"salem",taluk:"omalur",hometown:"Omalur"},
+{name:"Muthu",phone:"919842222222",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"salem",taluk:"attur",hometown:"Attur"},
+
+// Trichy
+{name:"Saravanan",phone:"919843333333",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"trichy",taluk:"srirangam",hometown:"Srirangam"},
+{name:"Raj",phone:"919844444444",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"trichy",taluk:"lalgudi",hometown:"Lalgudi"},
+
+// Theni
+{name:"Dinesh",phone:"919845555555",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"theni",taluk:"periyakulam",hometown:"Periyakulam"},
+{name:"Hari",phone:"919846666666",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"theni",taluk:"bodinayakanur",hometown:"Bodinayakanur"},
+
+// Namakkal
+{name:"Senthil",phone:"919847777777",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"namakkal",taluk:"valur",hometown:"Valur"},
+{name:"Vignesh",phone:"919848888888",image:"https://via.placeholder.com/90",state:"tamilnadu",district:"namakkal",taluk:"pandamangalam",hometown:"Pandamangalam"}
+
+];
+
+/* Select elements */
+
+const stateSelect=document.getElementById("stateSelect");
+const districtSelect=document.getElementById("districtSelect");
+const talukSelect=document.getElementById("talukSelect");
+const driversGrid=document.getElementById("driversGrid");
+
+/* State Change */
+
+stateSelect.addEventListener("change",function(){
+
+districtSelect.innerHTML='<option value="">Select District</option>';
+talukSelect.innerHTML='<option value="">Select Taluk</option>';
+
+districtSelect.disabled=false;
+talukSelect.disabled=true;
+
+const state=this.value;
+
+if(state){
+
+Object.keys(locationData[state]).forEach(district=>{
+
+let option=document.createElement("option");
+option.value=district;
+option.textContent=district.charAt(0).toUpperCase()+district.slice(1);
+
+districtSelect.appendChild(option);
+
+});
+
+}
+
+});
+
+/* District Change */
+
+districtSelect.addEventListener("change",function(){
+
+talukSelect.innerHTML='<option value="">Select Taluk</option>';
+talukSelect.disabled=false;
+
+const state=stateSelect.value;
+const district=this.value;
+
+locationData[state][district].forEach(taluk=>{
+
+let option=document.createElement("option");
+option.value=taluk.toLowerCase();
+option.textContent=taluk;
+
+talukSelect.appendChild(option);
+
+});
+
+});
+
+/* Taluk Change */
+
+talukSelect.addEventListener("change",filterDrivers);
+
+/* Filter Drivers */
+
+function filterDrivers(){
+
+driversGrid.innerHTML='<div class="loader"></div>';
+
+setTimeout(()=>{
+
+const state=stateSelect.value;
+const district=districtSelect.value;
+const taluk=talukSelect.value;
+
+let filtered=drivers.filter(d=>
+
+d.state===state &&
+d.district===district &&
+d.taluk===taluk
+
+);
+
+displayDrivers(filtered);
+
+},700);
+
+}
+
+/* Display Drivers */
+
+function displayDrivers(list){
+
+driversGrid.innerHTML="";
+
+if(list.length===0){
+driversGrid.innerHTML='<div class="no-drivers">No drivers found</div>';
+return;
+}
+
+list.forEach(driver=>{
+
+let card=document.createElement("div");
+card.className="driver-card";
+
+card.innerHTML=`
+
+<img src="${driver.image}" class="driver-img">
+
+<h3>${driver.name}</h3>
+
+<p>📍 ${driver.hometown}</p>
+
+<a href="tel:+${driver.phone}" class="connect-btn">📞 Call</a><br>
+
+<a href="https://wa.me/${driver.phone}" class="connect-btn whatsapp">💬 WhatsApp</a>
+
+`;
+
+driversGrid.appendChild(card);
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
